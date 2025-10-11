@@ -10,7 +10,6 @@
  * See the LICENSE file for more details.
  */
 
-
 use std::collections::HashMap;
 use std::fs;
 use std::io::{self, Write};
@@ -19,18 +18,26 @@ use regex::Regex;
 use clap::{Parser, Subcommand};
 use rust_embed::RustEmbed;
 
-const BANNER: &str = r#"
-             _                             _
-            (_)                           | |
-  ___  _ __  _   __ _  _   _   ___      __| |  ___ __   __
- / _ \| '__|| | / _` || | | | / _ \    / _` | / _ \\ \ / /
-|  __/| |   | || (_| || |_| ||  __/ _ | (_| ||  __/ \ V /
- \___||_|   |_| \__, | \__,_| \___|(_) \__,_| \___|  \_/
-                   | |
-                   |_|
- https://github.com/EriqueRocha/edev
+const BANNER: &str = concat!("\x1b[34m", r#"
+        developerStartSpringboot
+    ,---,       .--.--.      .--.--.
+  .'  .' `\    /  /    '.   /  /    '.
+,---.'     \  |  :  /`. /  |  :  /`. /
+|   |  .`\  | ;  |  |--`   ;  |  |--`
+:   : |  '  | |  :  ;_     |  :  ;_
+|   ' '  ;  :  \  \    `.   \  \    `.
+'   | ;  .  |   `----.   \   `----.   \
+|   | :  |  '   __ \  \  |   __ \  \  |
+'   : | /  ;   /  /`--'  /  /  /`--'  /
+|   | '` ,/   '--'.     /  '--'.     /
+;   :  .'       `--'---'     `--'---'
+|   ,.'
+'---'
+ https://github.com/EriqueRocha/developerStartSpringboot
  START YOUR JAVA PROJECT WITH SPRINGBOOT
-"#;
+"#,
+"\x1b[0m"
+);
 
 #[derive(Parser)]
 #[command(name = "dss")]
