@@ -1,3 +1,16 @@
+/*
+ * Copyright (C) 2025 Erique Rocha
+ *
+ * This file is part of developerStartSpringboot.
+ *
+ * developerStartSpringboot is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License.
+ *
+ * See the LICENSE file for more details.
+ */
+
+
 use std::collections::HashMap;
 use std::fs;
 use std::io::{self, Write};
