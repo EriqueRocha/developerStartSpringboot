@@ -1,4 +1,4 @@
---Schema padrão: public
+--default schema: public
 CREATE TABLE IF NOT EXISTS admins (
       id BIGSERIAL PRIMARY KEY,
       email VARCHAR(255) NOT NULL UNIQUE,
@@ -20,12 +20,13 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
 CREATE INDEX IF NOT EXISTS idx_admins_email ON admins (email);
 CREATE INDEX IF NOT EXISTS idx_authors_email ON {{tableName}} (email);
 
+-- default password: test123456
 INSERT INTO admins (email, password, name, created_at, updated_at)
 VALUES
-    ('admin1@{{yourDomain}}', '$2a$10$gJoXoMZ0nsrX8TzW4.5pveCnyo.v8I/0HyBySBYX7PaQU3yj.tv3C', 'Admin One', NOW(), NOW()),
-    ('admin2@{{yourDomain}}', '$2a$10$N9qo8uLOickgx2ZMRZo5e.7a6Kcn8WgXJZKie0t92xSu3kSjtLhCy', 'Admin Two', NOW(), NOW());
+    ('admin1@{{yourDomain}}', '$2a$10$XTcZJSBbcIdA7PD2Ta8fmu4EmZ2tasvrPoHM2BdUtd.mYi2I5EBFK', 'Admin One', NOW(), NOW()),
+    ('admin2@{{yourDomain}}', '$2a$10$HAtgYRWeNHDeyA4kntuq6OrEMN8Qgz86XN0ftyg.wsBWXzTunAmKe', 'Admin Two', NOW(), NOW());
 
 INSERT INTO {{tableName}} (email, password, name, created_at, updated_at)
 VALUES
-    ('{{userEntity}}1@{{yourDomain}}', '$2a$10$cCzcz2EiyQxC5tejMn7e7.1piC3dFvZ68a8FmXzFeiQmjIAHqRFQu', 'Author One', NOW(), NOW()),
-    ('{{userEntity}}2@{{yourDomain}}', '$2a$10$9nbF6R7552YblV3Fkk6m5O0qmJUm1bS0g7cUB495UvA3r0xY1YqNa', 'Author Two', NOW(), NOW());
+    ('{{userEntity}}1@{{yourDomain}}', '$2a$10$xi3eengxM5..Sa16AqgRU.cZ7lltDkacVlXLbYRqrzzttDVprHS06', '{{userEntity}} One', NOW(), NOW()),
+    ('{{userEntity}}2@{{yourDomain}}', '$2a$10$VgpXD/oN91RpM/OH9s/3OO5B/BGrfpOAcV/0FPRPKu0ZJV1ITuZey', '{{userEntity}} Two', NOW(), NOW());

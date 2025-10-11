@@ -1,4 +1,4 @@
-package {{yourDomain}}.domain.valueobjects;
+package {{yourDomain}}.core.domain.valueobjects;
 
 public class AuthenticationResult {
     private final String token;

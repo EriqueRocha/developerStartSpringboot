@@ -42,7 +42,7 @@ struct Templates;
 
 fn extract_embedded_template(dst_root: &Path) -> std::io::Result<()> {
     for file in Templates::iter() {
-        let rel = file.as_ref(); // caminho relativo dentro da pasta embed
+        let rel = file.as_ref();
         if let Some(data) = Templates::get(rel) {
             let target = dst_root.join(rel);
             if let Some(parent) = target.parent() {
@@ -300,20 +300,20 @@ fn edit_file_contents(dst_root: &Path, ph: &HashMap<&str, String>, replacements:
 fn init_project() -> io::Result<()> {
     println!("{}", BANNER);
 
-    let user_entity_input = prompt_required("{{UserEntity}} (ex: UserAccount)");
+    let app_name = prompt_required("Application name (Application name)");
+    let app_name_clean = to_app_name_clean(&app_name);
+
+    let user_entity_input = prompt_required("Enter the name of a user entity (ex: UserAccount)");
     let user_entity_pascal = to_pascal_case(&user_entity_input);
     let user_entity_lower = to_lower_first(&user_entity_pascal);
     let table_name = to_snake_case(&user_entity_pascal);
 
-    let app_name = prompt_required("{{appName}} (Application name)");
-    let app_name_clean = to_app_name_clean(&app_name);
+    let your_domain = prompt_required("Your domain (ex: com.example.demo)");
 
-    let your_domain = prompt_required("{{yourDomain}} (ex: com.example.demo)");
-
-    let description = prompt("{{description}}", Some("defauil -> api"));
-    let develop_name = prompt("{{developName}}", Some("defauil -> erique.dev"));
-    let develop_mail = prompt("{{developMail}}", Some("defauil -> contato@erique.dev"));
-    let develop_url = prompt("{{developUrl}}", Some("defauil -> erique.dev"));
+    let description = prompt("Description", Some("defauil -> api"));
+    let develop_name = prompt("Developer name", Some("defauil -> erique.dev"));
+    let develop_mail = prompt("Developer email", Some("defauil -> contato@erique.dev"));
+    let develop_url = prompt("Your website", Some("defauil -> erique.dev"));
 
     let mut ph = HashMap::new();
     ph.insert("userEntity", user_entity_lower.clone());

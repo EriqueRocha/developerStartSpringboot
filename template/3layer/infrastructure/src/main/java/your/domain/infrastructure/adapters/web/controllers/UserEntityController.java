@@ -7,12 +7,15 @@ import {{yourDomain}}.infrastructure.adapters.web.dto.Create{{UserEntity}}Respon
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
-@RequestMapping("/api/{{userEntity}}s")
+@RequestMapping("/api/{{userEntity}}")
 public class {{UserEntity}}Controller {
     private final Create{{UserEntity}}UseCase create{{UserEntity}}UseCase;
 

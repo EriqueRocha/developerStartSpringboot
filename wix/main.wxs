@@ -111,7 +111,7 @@
                         <Component Id='binary0' Guid='*'>
                             <File
                                 Id='exe0'
-                                Name='developerStartSpringboot.exe'
+                                Name='dss.exe'
                                 DiskId='1'
                                 Source='$(var.CargoTargetBinDir)\developerStartSpringboot.exe'
                                 KeyPath='yes'/>

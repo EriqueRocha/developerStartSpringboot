@@ -6,6 +6,8 @@ import {{yourDomain}}.infrastructure.adapters.repositories.entities.{{UserEntity
 import {{yourDomain}}.infrastructure.adapters.repositories.jpa.{{UserEntity}}JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public class Jpa{{UserEntity}}Repository implements {{UserEntity}}Repository {
     private final {{UserEntity}}JpaRepository jpaRepository;
@@ -22,8 +24,8 @@ public class Jpa{{UserEntity}}Repository implements {{UserEntity}}Repository {
 
     @Override
     public {{UserEntity}} save({{UserEntity}} {{userEntity}}) {
-        {{AuthorEntity}} entity = toEntity({{userEntity}});
-        {{AuthorEntity}} savedEntity = jpaRepository.save(entity);
+        {{UserEntity}}Entity entity = toEntity({{userEntity}});
+        {{UserEntity}}Entity savedEntity = jpaRepository.save(entity);
         return toDomain(savedEntity);
     }
 
@@ -33,7 +35,7 @@ public class Jpa{{UserEntity}}Repository implements {{UserEntity}}Repository {
                 .map(this::toDomain);
     }
 
-    private {{UserEntity}} toDomain({{AuthorEntity}} entity) {
+    private {{UserEntity}} toDomain({{UserEntity}}Entity entity) {
         return new {{UserEntity}}(
                 entity.getId(),
                 entity.getEmail(),
@@ -44,8 +46,8 @@ public class Jpa{{UserEntity}}Repository implements {{UserEntity}}Repository {
         );
     }
 
-    private {{AuthorEntity}} toEntity({{UserEntity}} domain) {
-        {{AuthorEntity}} entity = new {{AuthorEntity}}();
+    private {{UserEntity}}Entity toEntity({{UserEntity}} domain) {
+        {{UserEntity}}Entity entity = new {{UserEntity}}Entity();
         entity.setId(domain.getId());
         entity.setEmail(domain.getEmail());
         entity.setPassword(domain.getPassword());
