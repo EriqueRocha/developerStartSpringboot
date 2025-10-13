@@ -84,7 +84,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: main-latest
-          name: Stable - main latest (${{ github.sha }})
+          name: Stable - (Ubuntu-linux)
           draft: false
           prerelease: false
           make_latest: true
