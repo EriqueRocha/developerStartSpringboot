@@ -20,3 +20,5 @@ the complete foundation for your Spring Boot API.
 | **Application** | Orchestrates use cases and coordinates the business logic using the domain entities. Handles transactions, validation, and flow control. | Core | `CreateUserService`, `ProcessPaymentUseCase`, `OrderManager`, `DtoMapper` |
 | **Infrastructure** | Implements the technical details and integrates with external systems (databases, APIs, file storage, messaging, etc.). Contains controllers, repositories, and configurations. | Application (and sometimes Core) | `UserRepositoryJpa`, `PaymentApiClient`, `EmailServiceImpl`, `UserController`, `SpringConfig` |
 
+
+## Gustavo Priftis
