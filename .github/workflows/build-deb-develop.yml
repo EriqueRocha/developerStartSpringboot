@@ -1,14 +1,20 @@
-name: Build .deb
+name: Build and Release .deb
 
 on:
   push:
-    branches: [ "develop" ]
-    tags: [ "v*" ]
+    branches:
+      - develop
+      - main
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       CARGO_TERM_COLOR: always
 
@@ -31,8 +37,42 @@ jobs:
       - name: Build .deb
         run: cargo deb
 
-      - name: Upload .deb artifact
+      - name: Upload .deb artifact (sempre)
         uses: actions/upload-artifact@v4
         with:
           name: deb-package
           path: target/debian/*.deb
+
+      #Só em push de tag semântica
+      - name: Detect prerelease or stable (from tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        id: relmeta
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" =~ -(alpha|beta|rc) ]]; then
+            echo "PRERELEASE=true" >> $GITHUB_OUTPUT
+            echo "RELEASE_NAME=Beta - ${TAG}" >> $GITHUB_OUTPUT
+          else
+            echo "PRERELEASE=false" >> $GITHUB_OUTPUT
+            echo "RELEASE_NAME=Stable - ${TAG}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate SHA256 checksums (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd target/debian
+          for f in *.deb; do
+            sha256sum "$f" > "$f.sha256"
+          done
+
+      - name: Create GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ steps.relmeta.outputs.RELEASE_NAME }}
+          draft: false
+          prerelease: ${{ steps.relmeta.outputs.PRERELEASE }}
+          files: |
+            target/debian/*.deb
+            target/debian/*.sha256
