@@ -83,8 +83,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: main-latest
-          name: Stable - main latest (${{ github.sha }})
+          tag_name: Ubuntu-linux
+          name: Stable
           draft: false
           prerelease: false
           make_latest: true
