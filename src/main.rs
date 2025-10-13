@@ -18,7 +18,7 @@ use regex::Regex;
 use clap::{Parser, Subcommand};
 use rust_embed::RustEmbed;
 
-const BANNER: &str = concat!("\x1b[34m", r#"
+const BANNER: &str = concat!("\x1b[32m", r#"
         developerStartSpringboot
     ,---,       .--.--.      .--.--.
   .'  .' `\    /  /    '.   /  /    '.
@@ -320,15 +320,15 @@ fn edit_file_contents(dst_root: &Path, ph: &HashMap<&str, String>, replacements:
 fn init_project() -> io::Result<()> {
     println!("{}", BANNER);
 
-    let app_name = prompt_required("Application name (Application name)");
+    let app_name = prompt_required("Application name (e.g.: myAPI)");
     let app_name_clean = to_app_name_clean(&app_name);
 
-    let user_entity_input = prompt_required("Enter the name of a user entity (ex: UserAccount)");
+    let user_entity_input = prompt_required("Enter the name of a user entity (e.g.: UserAccount)");
     let user_entity_pascal = to_pascal_case(&user_entity_input);
     let user_entity_lower = to_lower_first(&user_entity_pascal);
     let table_name = to_snake_case(&user_entity_pascal);
 
-    let your_domain = prompt_required("Your domain (ex: com.example.demo)");
+    let your_domain = prompt_required("Your domain (e.g.: com.example.demo)");
 
     let description = prompt("Description", Some("defauil -> api"));
     let develop_name = prompt("Developer name", Some("defauil -> erique.dev"));
