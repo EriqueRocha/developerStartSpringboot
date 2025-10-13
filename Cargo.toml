@@ -8,10 +8,20 @@ description = "Spring Boot project generator CLI"
 repository = "https://github.com/EriqueRocha/developerStartSpringboot"
 
 [[bin]]
-name = "developerStartSpringboot"
+name = "dss"
 path = "src/main.rs"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
 
 [dependencies]
 regex = "1.11.3"
 clap = { version = "4.5.48", features = ["derive"] }
 rust-embed = "8"
+
+[package.metadata.deb]
+maintainer = "Erique Rocha <contato@erique.dev>"
+section = "utils"
+priority = "optional"
