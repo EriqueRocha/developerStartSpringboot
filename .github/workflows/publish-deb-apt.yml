@@ -1,26 +1,26 @@
 name: Publish APT Repository (Signed)
 
 on:
-  workflow_run:
-    workflows: ["Build and Release .deb"]
-    types:
-      - completed
+  release:
+    types: [published, edited]
   workflow_dispatch:
 
 jobs:
   publish-apt:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: |
+      startsWith(github.event.release.tag_name, 'v') ||
+      github.event.release.tag_name == 'Ubuntu-linux'
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download .deb artifact from latest release
+      - name: Download .deb assets from this release
         uses: robinraju/release-downloader@v1
         with:
           repository: ${{ github.repository }}
-          latest: true
+          tag: ${{ github.event.release.tag_name }}
           fileName: "*.deb"
           out-file-path: repo/pool/main/
 
@@ -42,16 +42,19 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mkdir -p repo/dists/stable/main/binary-amd64
+          # mover .deb para pool/main, caso release-downloader crie subpastas
+          mkdir -p repo/pool/main
+          find repo/pool/main -type f -name "*.deb" || mv repo/pool/main/*/*.deb repo/pool/main/ 2>/dev/null || true
 
           apt-ftparchive packages repo/pool > repo/dists/stable/main/binary-amd64/Packages
-          gzip -k repo/dists/stable/main/binary-amd64/Packages
+          gzip -kf repo/dists/stable/main/binary-amd64/Packages
           apt-ftparchive release repo/dists/stable > repo/dists/stable/Release
 
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-              -abs -o repo/dists/stable/Release.gpg repo/dists/stable/Release
+            -abs -o repo/dists/stable/Release.gpg repo/dists/stable/Release
 
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-              --clearsign -o repo/dists/stable/InRelease repo/dists/stable/Release
+            --clearsign -o repo/dists/stable/InRelease repo/dists/stable/Release
 
       - name: Export public key
         run: |
@@ -65,4 +68,4 @@ jobs:
           publish_branch: gh-pages
           publish_dir: repo
           keep_files: true
-          commit_message: "Update signed APT repo from latest release"
+          commit_message: "Update signed APT repo from release ${{ github.event.release.tag_name }}"
