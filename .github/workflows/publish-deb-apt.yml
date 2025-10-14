@@ -9,13 +9,15 @@ on:
 jobs:
   publish-apt:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Capturar artifact deb-package (somente workflow_run)
+      - name: Capturar artifact deb-package (workflow_run only)
         if: ${{ github.event_name == 'workflow_run' }}
         uses: actions/github-script@v7
         id: get-artifacts
@@ -34,7 +36,7 @@ jobs:
             }
             core.setOutput("artifact_id", deb.id.toString());
 
-      - name: Baixar artifact via API (somente workflow_run)
+      - name: Baixar artifact via API (workflow_run only)
         if: ${{ github.event_name == 'workflow_run' }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -49,7 +51,7 @@ jobs:
           unzip artifact.zip -d deb-package
           cd ..
 
-      - name: Download .deb do release Ubuntu-linux (somente manual)
+      - name: Download .deb do release Ubuntu-linux (manual only)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: robinraju/release-downloader@v1
         with:
@@ -65,7 +67,6 @@ jobs:
           for f in _artifact/deb-package/**/*.deb repo/pool/main/**/*.deb; do
             [ -f "$f" ] && cp -v "$f" repo/pool/main/ || true
           done
-          # Se download manual colocou direto no out-file-path, já está em repo/pool/main
           ls -l repo/pool/main || true
 
       - name: Install tools
@@ -90,15 +91,19 @@ jobs:
         run: |
           set -e
           mkdir -p repo/dists/stable/main/binary-amd64
-          apt-ftparchive packages repo/pool > repo/dists/stable/main/binary-amd64/Packages
-          gzip -kf repo/dists/stable/main/binary-amd64/Packages
-          apt-ftparchive release repo/dists/stable > repo/dists/stable/Release
+          
+          cd repo
+          apt-ftparchive packages pool > dists/stable/main/binary-amd64/Packages
+          gzip -kf dists/stable/main/binary-amd64/Packages
+          apt-ftparchive release dists/stable > dists/stable/Release
 
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-            -abs -o repo/dists/stable/Release.gpg repo/dists/stable/Release
+            -abs -o dists/stable/Release.gpg dists/stable/Release
 
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-            --clearsign -o repo/dists/stable/InRelease repo/dists/stable/Release
+            --clearsign -o dists/stable/InRelease dists/stable/Release
+          
+          cd ..
 
       - name: Export public key
         run: |
