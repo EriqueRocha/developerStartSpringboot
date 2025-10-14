@@ -1,0 +1,36 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Date: Tue, 14 Oct 2025 16:45:39 +0000
+MD5Sum:
+ 282cf9f4c88bd144a685d10d24082aa7               38 Release
+ 89deeb3af92dc187adcc4e7bb91ed804             3822 main/binary-amd64/Packages
+ 5a8a91a1d933dc08ed5ac7b98e32a9f3             1589 main/binary-amd64/Packages.gz
+SHA1:
+ d78a170ead74306b22f0523c973147e195172b7c               38 Release
+ a9ac4bae3c5a72794661fc1e4a61d75931bbd743             3822 main/binary-amd64/Packages
+ b16d0e2a432dda30f71efad10e95ac6e27857ec8             1589 main/binary-amd64/Packages.gz
+SHA256:
+ 158988fc4a66466cc3ad2f4703ff9ce08253c553f748ff8bf74bc86fe02b2022               38 Release
+ 7cce293d56ced94d43d27d6c1410933f9ce7bd89bccfc8254f3be2569735221e             3822 main/binary-amd64/Packages
+ cdffd648a146ae062b8a5c1414cc23cef2077f949b4c208af23ac0a99a7c3a74             1589 main/binary-amd64/Packages.gz
+SHA512:
+ 1d1132563398283b89b0d7f9477ee2e50dc6384add1b4d459b4f554773f5454d931b256203fb097008a5aa2ff33f9d874018c2e22099a2dc1b2692d2ff1379ab               38 Release
+ ca17375f68fe86cd709f275a1268c08d62e5eb446371c4dc30adcedb2eda9825731150fde2621d0cb68f781007a8f343bbd9f94891d66ea81539b8303845f5c0             3822 main/binary-amd64/Packages
+ 7a762430121e301edbd02d148b84854f13caa5c4acd403060dd84db9e96a456c467b0980f7c26b1c652c68c8106f963517b2bd2b6f6253efa2702191911062b5             1589 main/binary-amd64/Packages.gz
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEa9p9H3nj06/ecAJy9eP+T74q/e4FAmjufjQACgkQ9eP+T74q
+/e705w//dWapG5oDvtjNLYbUf+LgGuNi5ADRyp9/pYSWKTR3aHM+GsgL0KxDs2Xl
+jEoxtJ83oqqcAagk2tET7T5PYjivlnb38I5iQFlpo1wZOze+wQ5cdkGXM/mRFXsg
+SibZ4x3Zw41r+GVafRNY4k+Hfq/wqBG6ddV9wDrb4Oe4brmkL0tdUZv6h10fhGRk
+CTx1G2M8VzZtbA6nBSjjofhTcWEshMtwYyrqWwRunj9fmdkOdlA6ib6t5y+SOqkj
+M+2g4mmw+sbym2Bp3N6bbNXNxdDrXreTJRikma1o0Lcgxlty+5zWSlpJ4tdXJToJ
+yMpE8Kxo7ojTOwGkp2iv2NL7WqqReB27ZIC+xh+lVyM/xUM5oTgbJ+pvQqke37jM
+gFwRTlybvXT/Lhi6OxhlRi4A5M0Gt42QDtv1AfkLBkgRGMwQFsM35eGro7oH2Iqp
+09tPW8G+deJ+E8AVHvFnd/VyYpfGI62NTx23sRtsV+iaY4wyCSC/KBPoi5I8ckto
+xq1I0REU1ihegGDJU33I8d4Zj3e4QqLkvIasOCXScsuCbSZun7+BM4Tuy5HLoUDR
+gU0hHeO4qm7C6139TQRT3dPwHpZiZlO/kPozzrD9GaleRXbHHga81n4o6G2gneE9
+DKf1dQs+NXTRkvwlP9TQVXzMfinK2VJQjusIlvWQKcYlDaCCUwI=
+=TymV
+-----END PGP SIGNATURE-----
