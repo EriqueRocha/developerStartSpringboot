@@ -37,12 +37,12 @@ jobs:
       - name: Baixar artifact via API (somente workflow_run)
         if: ${{ github.event_name == 'workflow_run' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           set -e
           ART_ID="${{ steps.get-artifacts.outputs.artifact_id }}"
           mkdir -p _artifact && cd _artifact
-          curl -L -H "Authorization: Bearer $GITHUB_TOKEN" \
+          curl -L -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -o artifact.zip \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART_ID}/zip"
@@ -108,7 +108,7 @@ jobs:
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}
           publish_branch: gh-pages
           publish_dir: repo
           keep_files: true
