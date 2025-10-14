@@ -4,14 +4,14 @@ Version: 0.1.0-1
 Priority: optional
 Section: utils
 Maintainer: erique.dev <contato@erique.dev>
-Installed-Size: 2340
+Installed-Size: 2341
 Depends: libc6 (>= 2.34)
 Filename: pool/main/developerstartspringboot_0.1.0-1_amd64.deb
-Size: 699200
-MD5sum: 58d283016dd6dadd60f27d29ed94c03d
-SHA1: 85ac6cbaf65bd40cae820273ea83f10a4fa5e175
-SHA256: 3ab5dd79393665b2a68311dee18c5073d2fa422ad9c6409ca6f1d2e4fbed0fb3
-SHA512: 30e94d94751ef5e1ed3e9acc3d628c40f97b5b9135d74a2808a1971a89e2d287710ddb1cd7c1b491bb6afc30a8be00821461f0856c3bc38059068c61a7e844a8
+Size: 699656
+MD5sum: 4ba65ff8250b6254169a413d1b8daa92
+SHA1: b6ba988f6458c4f645b31376644936458d3e5ccc
+SHA256: 0cceb41a7bbb6dc1c83ad91b11efc4169408b1412d52b595e2af2cb68a637239
+SHA512: b9bfcdac11207d6225456f8f22c52e8b58da23702b40cd27f565d97f49029380d952462ad46202689094000a3cb2c054b7a4b92d2ad2bd535ff78e7b371fea40
 Homepage: https://github.com/EriqueRocha/developerStartSpringboot
 Description: Spring Boot project generator CLI
  .
@@ -29,6 +29,14 @@ Description: Spring Boot project generator CLI
  the complete foundation for your Spring Boot API.
  .
  # how to install - Ubuntu
+ ### option A:
+ ```bash
+ curl -fsSL
+ https://eriquerocha.github.io/developerStartSpringboot/install-deb.sh | sudo
+ bash
+ ```
+ .
+ ### option B:
  run the following command sequence in the terminal:
  1. Download the .deb package
  ```bash
