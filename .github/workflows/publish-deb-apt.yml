@@ -1,28 +1,72 @@
 name: Publish APT Repository (Signed)
 
 on:
-  release:
-    types: [published, edited]
+  workflow_run:
+    workflows: ["Build and Release .deb"]
+    types: [completed]
   workflow_dispatch:
 
 jobs:
   publish-apt:
     runs-on: ubuntu-latest
-    if: |
-      startsWith(github.event.release.tag_name, 'v') ||
-      github.event.release.tag_name == 'Ubuntu-linux'
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download .deb assets from this release
+      - name: Capturar artifact deb-package (somente workflow_run)
+        if: ${{ github.event_name == 'workflow_run' }}
+        uses: actions/github-script@v7
+        id: get-artifacts
+        with:
+          script: |
+            const run_id = context.payload.workflow_run.id;
+            const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id
+            });
+            const deb = data.artifacts.find(a => a.name === "deb-package");
+            if (!deb) {
+              core.setFailed("Artifact 'deb-package' não encontrado neste run.");
+              return;
+            }
+            core.setOutput("artifact_id", deb.id.toString());
+
+      - name: Baixar artifact via API (somente workflow_run)
+        if: ${{ github.event_name == 'workflow_run' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          ART_ID="${{ steps.get-artifacts.outputs.artifact_id }}"
+          mkdir -p _artifact && cd _artifact
+          curl -L -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -o artifact.zip \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART_ID}/zip"
+          unzip artifact.zip -d deb-package
+          cd ..
+
+      - name: Download .deb do release Ubuntu-linux (somente manual)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: robinraju/release-downloader@v1
         with:
           repository: ${{ github.repository }}
-          tag: ${{ github.event.release.tag_name }}
+          tag: Ubuntu-linux
           fileName: "*.deb"
           out-file-path: repo/pool/main/
+
+      - name: Organizar .deb em repo/pool/main
+        run: |
+          mkdir -p repo/pool/main
+          shopt -s globstar nullglob
+          for f in _artifact/deb-package/**/*.deb repo/pool/main/**/*.deb; do
+            [ -f "$f" ] && cp -v "$f" repo/pool/main/ || true
+          done
+          # Se download manual colocou direto no out-file-path, já está em repo/pool/main
+          ls -l repo/pool/main || true
 
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y dpkg-dev gnupg apt-utils
@@ -31,12 +75,12 @@ jobs:
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
-          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          set -e
           mkdir -p ~/.gnupg
           chmod 700 ~/.gnupg
-          echo "use-agent" > ~/.gnupg/gpg.conf
-          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
-          echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          printf "use-agent\npinentry-mode loopback\n" > ~/.gnupg/gpg.conf
+          printf "allow-loopback-pinentry\n" > ~/.gnupg/gpg-agent.conf
           echo RELOADAGENT | gpg-connect-agent
           gpg --list-secret-keys
 
@@ -44,11 +88,8 @@ jobs:
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
+          set -e
           mkdir -p repo/dists/stable/main/binary-amd64
-          # mover .deb para pool/main, caso release-downloader crie subpastas
-          mkdir -p repo/pool/main
-          find repo/pool/main -type f -name "*.deb" || mv repo/pool/main/*/*.deb repo/pool/main/ 2>/dev/null || true
-
           apt-ftparchive packages repo/pool > repo/dists/stable/main/binary-amd64/Packages
           gzip -kf repo/dists/stable/main/binary-amd64/Packages
           apt-ftparchive release repo/dists/stable > repo/dists/stable/Release
@@ -71,4 +112,4 @@ jobs:
           publish_branch: gh-pages
           publish_dir: repo
           keep_files: true
-          commit_message: "Update signed APT repo from release ${{ github.event.release.tag_name }}"
+          commit_message: "Update signed APT repo (trigger: ${{ github.event_name }})"
