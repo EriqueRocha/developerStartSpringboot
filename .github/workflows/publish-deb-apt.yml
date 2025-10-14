@@ -1,0 +1,57 @@
+name: Publish APT Repository (Signed)
+
+on:
+  workflow_run:
+    workflows: ["Build and Release .deb"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  publish-apt:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download .deb artifact from latest release
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: ${{ github.repository }}
+          latest: true
+          fileName: "*.deb"
+          out-file-path: repo/pool/main/
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev gnupg apt-utils
+
+      - name: Import GPG key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --list-secret-keys
+
+      - name: Generate signed APT repository
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          mkdir -p repo/dists/stable/main/binary-amd64
+          apt-ftparchive packages repo/pool > repo/dists/stable/main/binary-amd64/Packages
+          gzip -k repo/dists/stable/main/binary-amd64/Packages
+
+          apt-ftparchive release repo/dists/stable > repo/dists/stable/Release
+
+          gpg --batch --yes --passphrase "$GPG_PASSPHRASE" -abs -o repo/dists/stable/Release.gpg repo/dists/stable/Release
+          gpg --batch --yes --passphrase "$GPG_PASSPHRASE" --clearsign -o repo/dists/stable/InRelease repo/dists/stable/Release
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: repo
+          commit_message: "Update signed APT repo from latest release"

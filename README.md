@@ -57,7 +57,7 @@ curl -L -O  https://github.com/EriqueRocha/developerStartSpringboot/releases/dow
 sudo dnf install ./developerStartSpringboot-0.1.0-1.x86_64.rpm
 ```
 
-4. Start using
+3. Start using
 ```bash
 dss init
 ```
