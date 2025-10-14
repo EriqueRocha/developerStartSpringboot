@@ -8,72 +8,48 @@
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <style>
     :root{
-      --bg:#0e1116;
-      --panel:#0b0f14;
-      --border:#1c232f;
-      --text:#d1e2ff;
-      --muted:#8aa2c0;
-      --green:#4ade80;
-      --red:#ef4444;
-      --yellow:#facc15;
-      --blue:#60a5fa;
-      --accent:#34d399;
-      --btn:#121826;
-      --btn-border:#253041;
-      --link:#7dd3fc;
+      --bg:#0e1116; --panel:#0b0f14; --border:#1c232f; --text:#d1e2ff; --muted:#8aa2c0;
+      --green:#4ade80; --red:#ef4444; --yellow:#facc15; --blue:#60a5fa; --accent:#34d399;
+      --btn:#121826; --btn-border:#253041; --link:#7dd3fc;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; line-height:1.55}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      line-height:1.55}
     a{color:var(--link);text-decoration:none}
     a:hover{text-decoration:underline}
     .wrap{max-width:980px;margin:40px auto;padding:0 16px}
     .hero{text-align:center;margin-bottom:28px}
     .hero h1{font-size:28px;margin:0 0 8px 0;letter-spacing:.5px}
     .hero p{margin:0;color:var(--muted)}
-    .term{
-      background:var(--panel);
-      border:1px solid var(--border);
-      border-radius:10px;
-      box-shadow: 0 10px 35px rgba(0,0,0,.35);
-      overflow:hidden;
-      margin:22px 0;
-    }
-    .term__top{
-      background:linear-gradient(180deg,#0f1420,#0d111a);
-      border-bottom:1px solid var(--border);
-      padding:10px 12px;
-      display:flex;align-items:center;gap:10px
-    }
+    .term{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.35);overflow:hidden;margin:22px 0}
+    .term__top{background:linear-gradient(180deg,#0f1420,#0d111a);border-bottom:1px solid var(--border);
+      padding:10px 12px;display:flex;align-items:center;gap:10px}
     .dots{display:flex;gap:8px;margin-right:8px}
     .dot{width:12px;height:12px;border-radius:50%}
-    .dot--red{background:#ff5f56}
-    .dot--yellow{background:#ffbd2e}
-    .dot--green{background:#27c93f}
+    .dot--red{background:#ff5f56}.dot--yellow{background:#ffbd2e}.dot--green{background:#27c93f}
     .term__title{color:var(--muted);font-size:12px}
     .term__body{padding:18px;overflow:auto}
-    pre{
-      position:relative;margin:0;background:#0c1220;border:1px solid var(--border);
-      border-radius:8px;padding:16px 44px 16px 16px;color:#dbebff;font-size:14px;
-      line-height:1.6;white-space:pre-wrap;word-break:break-word;
+    .cmd{
+      position:relative;margin:10px 0 16px 0;background:#0c1220;border:1px solid var(--border);
+      border-radius:8px;padding:14px 44px 14px 14px;color:#dbebff;font-size:14px
     }
-    code{color:#e5f0ff}
+    .cmd code{white-space:pre-wrap;word-break:break-word;color:#e5f0ff}
     .copy-btn{
       position:absolute;top:8px;right:8px;background:var(--btn);border:1px solid var(--btn-border);
-      color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;
+      color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer
     }
     .copy-btn:hover{border-color:#3a4b66}
-    .badge{
-      display:inline-block;border:1px solid var(--btn-border);background:#0c1322;color:var(--muted);
-      border-radius:999px;padding:4px 10px;font-size:12px;margin:4px 6px 0 0;
-    }
+    .badge{display:inline-block;border:1px solid var(--btn-border);background:#0c1322;color:var(--muted);
+      border-radius:999px;padding:4px 10px;font-size:12px;margin:6px 6px 8px 0}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
     @media (max-width:800px){.grid{grid-template-columns:1fr}}
     .footer{margin:26px 0 40px;color:var(--muted);font-size:13px;text-align:center}
-    .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .kpi span{color:var(--muted);font-size:12px}
     .highlight{color:var(--accent)}
     img{max-width:100%;border:1px solid var(--border);border-radius:8px}
     .linklist{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;justify-content:center}
+    .muted{color:var(--muted);font-size:13px;margin:6px 0}
   </style>
 </head>
 <body>
@@ -92,11 +68,7 @@
 
     <div class="term">
       <div class="term__top">
-        <div class="dots">
-          <div class="dot dot--red"></div>
-          <div class="dot dot--yellow"></div>
-          <div class="dot dot--green"></div>
-        </div>
+        <div class="dots"><div class="dot dot--red"></div><div class="dot dot--yellow"></div><div class="dot dot--green"></div></div>
         <div class="term__title">terminal — overview</div>
       </div>
       <div class="term__body">
@@ -104,75 +76,55 @@
         <p><strong>developerStartSpringboot</strong> is a terminal application designed for developers starting a Spring Boot API who want to bypass the tedious initial steps of creating layers, folders, and authentication.</p>
         <p><img alt="dss terminal" src="./terminal.png"></p>
         <div class="badge">How to use</div>
-        <pre><button class="copy-btn" data-copy="usage">copy</button><code id="usage">
-# After installing, run:
-dss init
-
-# Answer a few questions and get a ready-to-go project structure.
-        </code></pre>
+        <div class="cmd"><button class="copy-btn" data-copy="dss1">copy</button><code id="dss1">dss init</code></div>
+        <p class="muted">Answer a few questions and get a ready-to-go project structure.</p>
       </div>
     </div>
 
     <div class="grid">
       <div class="term">
         <div class="term__top">
-          <div class="dots">
-            <div class="dot dot--red"></div>
-            <div class="dot dot--yellow"></div>
-            <div class="dot dot--green"></div>
-          </div>
+          <div class="dots"><div class="dot dot--red"></div><div class="dot dot--yellow"></div><div class="dot dot--green"></div></div>
           <div class="term__title">terminal — install (Ubuntu)</div>
         </div>
         <div class="term__body">
           <div class="badge">Option A — one‑liner</div>
-          <pre><button class="copy-btn" data-copy="ubuntuA">copy</button><code id="ubuntuA">
-curl -fsSL https://eriquerocha.github.io/developerStartSpringboot/install-deb.sh | sudo bash
-          </code></pre>
+          <div class="cmd"><button class="copy-btn" data-copy="ubA1">copy</button><code id="ubA1">curl -fsSL https://eriquerocha.github.io/developerStartSpringboot/install-deb.sh | sudo bash</code></div>
 
           <div class="badge">Option B — manual .deb</div>
-          <pre><button class="copy-btn" data-copy="ubuntuB">copy</button><code id="ubuntuB">
-# 1) Download the .deb package
-wget https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Ubuntu-linux/developerstartspringboot_0.1.0-1_amd64.deb
-# Or using curl:
-curl -L -O https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Ubuntu-linux/developerstartspringboot_0.1.0-1_amd64.deb
+          <p>1) Download the .deb package</p>
+          <div class="cmd"><button class="copy-btn" data-copy="ubB1">copy</button><code id="ubB1">wget https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Ubuntu-linux/developerstartspringboot_0.1.0-1_amd64.deb</code></div>
+          <p>Or</p>
+          <div class="cmd"><button class="copy-btn" data-copy="ubB2">copy</button><code id="ubB2">curl -L -O https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Ubuntu-linux/developerstartspringboot_0.1.0-1_amd64.deb</code></div>
 
-# 2) Install (from the download directory)
-sudo dpkg -i developerstartspringboot_0.1.0-1_amd64.deb
+          <p>2) Install (from the download directory)</p>
+          <div class="cmd"><button class="copy-btn" data-copy="ubB3">copy</button><code id="ubB3">sudo dpkg -i developerstartspringboot_0.1.0-1_amd64.deb</code></div>
 
-# 3) Start using
-dss init
-          </code></pre>
+          <p>3) Start using</p>
+          <div class="cmd"><button class="copy-btn" data-copy="ubB4">copy</button><code id="ubB4">dss init</code></div>
         </div>
       </div>
 
       <div class="term">
         <div class="term__top">
-          <div class="dots">
-            <div class="dot dot--red"></div>
-            <div class="dot dot--yellow"></div>
-            <div class="dot dot--green"></div>
-          </div>
+          <div class="dots"><div class="dot dot--red"></div><div class="dot dot--yellow"></div><div class="dot dot--green"></div></div>
           <div class="term__title">terminal — install (Fedora)</div>
         </div>
         <div class="term__body">
           <div class="badge">Direct URL install</div>
-          <pre><button class="copy-btn" data-copy="fedoraA">copy</button><code id="fedoraA">
-sudo dnf install https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm
-          </code></pre>
+          <div class="cmd"><button class="copy-btn" data-copy="fdA1">copy</button><code id="fdA1">sudo dnf install https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm</code></div>
 
           <div class="badge">Or — download and install</div>
-          <pre><button class="copy-btn" data-copy="fedoraB">copy</button><code id="fedoraB">
-# 1) Download the .rpm package
-wget https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm
-# Or using curl:
-curl -L -O https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm
+          <p>1) Download the .rpm package</p>
+          <div class="cmd"><button class="copy-btn" data-copy="fdB1">copy</button><code id="fdB1">wget https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm</code></div>
+          <p>Or</p>
+          <div class="cmd"><button class="copy-btn" data-copy="fdB2">copy</button><code id="fdB2">curl -L -O https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm</code></div>
 
-# 2) Install (from the download directory)
-sudo dnf install ./developerStartSpringboot-0.1.0-1.x86_64.rpm
+          <p>2) Install (from the download directory)</p>
+          <div class="cmd"><button class="copy-btn" data-copy="fdB3">copy</button><code id="fdB3">sudo dnf install ./developerStartSpringboot-0.1.0-1.x86_64.rpm</code></div>
 
-# 3) Start using
-dss init
-          </code></pre>
+          <p>3) Start using</p>
+          <div class="cmd"><button class="copy-btn" data-copy="fdB4">copy</button><code id="fdB4">dss init</code></div>
         </div>
       </div>
     </div>
@@ -194,7 +146,7 @@ dss init
         const which = btn.getAttribute('data-copy');
         copyFrom(which);
         btn.textContent = 'copied!';
-        setTimeout(()=>btn.textContent='copy', 1300);
+        setTimeout(()=>btn.textContent='copy', 1200);
       });
     });
   </script>
