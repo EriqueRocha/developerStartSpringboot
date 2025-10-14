@@ -6,12 +6,12 @@ Section: utils
 Maintainer: erique.dev <contato@erique.dev>
 Installed-Size: 2340
 Depends: libc6 (>= 2.34)
-Filename: repo/pool/main/developerstartspringboot_0.1.0-1_amd64.deb
-Size: 698704
-MD5sum: 3977158563d4c629e5ff5167fe3612f6
-SHA1: 7aaae39108aadfa2caa310400743b212402b6815
-SHA256: 3ea6aaa7166b29995a01fca9d4a2cb51a9df937d9d71378d704bb892a262ae36
-SHA512: 1d2744f87125ff17b7ba624034eb6b646c75c6821546a1a2dffbadc7774fa55eb6388fd39bf58ed2c1d39a262827f077632445edcc5cd8afe70fe7ee11b9703f
+Filename: pool/main/developerstartspringboot_0.1.0-1_amd64.deb
+Size: 699100
+MD5sum: 12db7530bc0594dc1f12f580e795a1cc
+SHA1: 614b00df306e72e7339cb9bfa400ae276237170e
+SHA256: b40002f68257d0593796a2a3fe4e937b3cbe7d423592587758c0c685c2de5d77
+SHA512: 95fb586ba5a114bf808a90cc656bddc286f5b389c091f6f1e38a489920f067f7643326e1108c46fee1f43fac9b8701e7af7b1de4033df4f33b55ad2f4479cbf2
 Homepage: https://github.com/EriqueRocha/developerStartSpringboot
 Description: Spring Boot project generator CLI
  .
