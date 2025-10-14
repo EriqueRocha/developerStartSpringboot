@@ -30,23 +30,33 @@ jobs:
       - name: Import GPG key
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          echo "use-agent\npinentry-mode loopback" > ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
+          echo RELOADAGENT | gpg-connect-agent
           gpg --list-secret-keys
 
-      - name: Generate signed APT repository
+      - name: Generate signed Release files
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mkdir -p repo/dists/stable/main/binary-amd64
+
           apt-ftparchive packages repo/pool > repo/dists/stable/main/binary-amd64/Packages
           gzip -k repo/dists/stable/main/binary-amd64/Packages
-
           apt-ftparchive release repo/dists/stable > repo/dists/stable/Release
 
-          gpg --batch --yes --passphrase "$GPG_PASSPHRASE" -abs -o repo/dists/stable/Release.gpg repo/dists/stable/Release
-          gpg --batch --yes --passphrase "$GPG_PASSPHRASE" --clearsign -o repo/dists/stable/InRelease repo/dists/stable/Release
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
+              -abs -o repo/dists/stable/Release.gpg repo/dists/stable/Release
+
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
+              --clearsign -o repo/dists/stable/InRelease repo/dists/stable/Release
+
+      - name: Export public key
+        run: |
+          mkdir -p repo
+          gpg --armor --export > repo/public.key
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
@@ -54,4 +64,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: repo
+          keep_files: true
           commit_message: "Update signed APT repo from latest release"
