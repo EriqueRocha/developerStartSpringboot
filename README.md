@@ -13,6 +13,12 @@ your terminal. Answer a few basic questions, and in seconds, you'll have
 the complete foundation for your Spring Boot API.
 
 # how to install - Ubuntu
+### option A:
+```bash
+curl -fsSL https://eriquerocha.github.io/developerStartSpringboot/install-deb.sh | sudo bash
+```
+
+### option B:
 run the following command sequence in the terminal:
 1. Download the .deb package
 ```bash
