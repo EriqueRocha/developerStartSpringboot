@@ -49,7 +49,7 @@ echo -e "${GREEN}✓ Chave GPG instalada${NC}"
 #Adicionar repositório
 echo -e "${YELLOW}Adicionando repositório APT...${NC}"
 SOURCES_FILE="/etc/apt/sources.list.d/developerstartspringboot.list"
-echo "deb [signed-by=${KEYRING_PATH}] https://eriquerocha.github.io/developerStartSpringboot stable main" > "$SOURCES_FILE"
+echo "deb [arch=amd64 signed-by=${KEYRING_PATH}] https://eriquerocha.github.io/developerStartSpringboot stable main" > "$SOURCES_FILE"
 
 if [ ! -f "$SOURCES_FILE" ]; then
   echo -e "${RED}Falha ao adicionar repositório.${NC}"
