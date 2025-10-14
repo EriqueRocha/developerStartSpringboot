@@ -1,17 +1,24 @@
-Date: Tue, 14 Oct 2025 18:23:53 +0000
+Architectures: amd64
+Codename: stable
+Components: main
+Date: Tue, 14 Oct 2025 18:26:07 +0000
+Description: DeveloperStartSpringboot APT repository
+Label: DeveloperStartSpringboot
+Origin: DeveloperStartSpringboot
+Suite: stable
 MD5Sum:
- 2eb851855584bea89cae03c52d395b00               38 Release
- 4da259fbd6fdd66e2b7eb81a36ddd1fb             3817 main/binary-amd64/Packages
- b4a6535168c7ef5a258bd7f1365b7dfb             1584 main/binary-amd64/Packages.gz
+ f72099f4fd17300246440af263c3b1fd              225 Release
+ d2a6f232bea16e355b2a7ef4dafc25ec             3817 main/binary-amd64/Packages
+ d87fe56bd337ccd79a03ae8cab872a17             1581 main/binary-amd64/Packages.gz
 SHA1:
- 45488cc594f89a0086cca22685d06ba1eea5013d               38 Release
- fe16451ae2d3f1f1546f96118dd89bc701992e6f             3817 main/binary-amd64/Packages
- cc90c417df2b10db6f4b5577fbb95b34697d8d92             1584 main/binary-amd64/Packages.gz
+ e8592aaad491919615b333d18f32b7b5a9d1eafa              225 Release
+ 2692fc478962690c0c3937481a39f7de59dd02e2             3817 main/binary-amd64/Packages
+ 5be8b21edd08107a5e63d85606a3bc7c629642d7             1581 main/binary-amd64/Packages.gz
 SHA256:
- f691d0bb3cd8e36d612f57e2d04871488eb672d3ba37659e8b9d5ec13dfa2a0d               38 Release
- 254e6de311e070d68e5875997bf3c8f0dba1052eaf377fc9e11b3e7cc14dce59             3817 main/binary-amd64/Packages
- 9a028f330df958c3da75533e7ec99f5d7f1becfb1704fd1fe2567c67800ae323             1584 main/binary-amd64/Packages.gz
+ b6603a1f87c5f185ba46538e24e6f2b047166dc5ab055c6637c19e2f06057516              225 Release
+ 8f1d6168277719dfc9160e4ad512584b837d29f0deb19845b21a068060f0cb59             3817 main/binary-amd64/Packages
+ f17d8a387b967acb71a5549fe6a3fd69aea16e6d34a97f322b0580eae5ccd636             1581 main/binary-amd64/Packages.gz
 SHA512:
- 805b9f9831a783d856b8962925e10d2063ee625b4678736ff5e70af1ea30752dc1ad8648516a7f3854aa5c736c989246f6003b3ab38be8c0852aca44502479de               38 Release
- b2d2a9a1b9e8988e9510f2790d7a86613359f3e839b388387a7cae48bea2c4fa8fba77afaea52c629b84d46f3ac0d3dfb5c9d76e0ec8fd784f38b0a167188a7e             3817 main/binary-amd64/Packages
- d823709b072ca76a7a5fb9214572d75a3757bf3e210d5435d4ccceb12a695f33e0e4fdc8d517c60b8d0c0cd898d2bf18908e3c8d06d49da0e2771aa72e026349             1584 main/binary-amd64/Packages.gz
+ 407b3ed5db4cf633f6e60535f4cddd20fe73ec4366232a63e881296d38933eeba6cf34b7642da24704435405d68b917021b3e39f4dd423c397d9b0d8b4c73901              225 Release
+ c46be7a78bed079b38302560cf51c67e171e7012377205a5ab0204de8d55ca829b4c7584998144b73be19704a9b791ee10014dd781cb5e7d370e48144313baff             3817 main/binary-amd64/Packages
+ ce95c2b00e22103fbfb25c5a85d6826cd3f28e69f30187666ccf91b8575d50872ba87a2b85b7f947c8d290a6e79c9298bbfbd73d96ed0e97a61c31a74cefa85e             1581 main/binary-amd64/Packages.gz
