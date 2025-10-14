@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DeveloperStart Springboot - APT Repo</title>
-  <meta name="description" content="Repositório APT do Developer Start Spring Boot (DSS) - Instalação via terminal para Ubuntu/Debian." />
+  <title>DeveloperStartSpringboot — APT/RPM Downloads</title>
+  <meta name="description" content="Developer Start Spring Boot (DSS) CLI — Install via APT or RPM. Terminal-themed landing page with quick copy commands." />
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <style>
     :root{
@@ -27,12 +27,8 @@
     a{color:var(--link);text-decoration:none}
     a:hover{text-decoration:underline}
     .wrap{max-width:980px;margin:40px auto;padding:0 16px}
-    .hero{
-      text-align:center;margin-bottom:28px
-    }
-    .hero h1{
-      font-size:28px;margin:0 0 8px 0;letter-spacing:.5px
-    }
+    .hero{text-align:center;margin-bottom:28px}
+    .hero h1{font-size:28px;margin:0 0 8px 0;letter-spacing:.5px}
     .hero p{margin:0;color:var(--muted)}
     .term{
       background:var(--panel);
@@ -54,81 +50,41 @@
     .dot--yellow{background:#ffbd2e}
     .dot--green{background:#27c93f}
     .term__title{color:var(--muted);font-size:12px}
-    .term__body{
-      padding:18px;
-      overflow:auto;
-    }
+    .term__body{padding:18px;overflow:auto}
     pre{
-      position:relative;
-      margin:0;
-      background:#0c1220;
-      border:1px solid var(--border);
-      border-radius:8px;
-      padding:16px 44px 16px 16px;
-      color:#dbebff;
-      font-size:14px;
-      line-height:1.6;
-      white-space:pre-wrap;
-      word-break:break-word;
+      position:relative;margin:0;background:#0c1220;border:1px solid var(--border);
+      border-radius:8px;padding:16px 44px 16px 16px;color:#dbebff;font-size:14px;
+      line-height:1.6;white-space:pre-wrap;word-break:break-word;
     }
     code{color:#e5f0ff}
     .copy-btn{
-      position:absolute;top:8px;right:8px;
-      background:var(--btn);
-      border:1px solid var(--btn-border);
-      color:var(--text);
-      border-radius:6px;
-      padding:6px 10px;
-      font-size:12px;
-      cursor:pointer;
+      position:absolute;top:8px;right:8px;background:var(--btn);border:1px solid var(--btn-border);
+      color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;
     }
     .copy-btn:hover{border-color:#3a4b66}
     .badge{
-      display:inline-block;
-      border:1px solid var(--btn-border);
-      background:#0c1322;
-      color:var(--muted);
-      border-radius:999px;
-      padding:4px 10px;
-      font-size:12px;
-      margin:4px 6px 0 0;
+      display:inline-block;border:1px solid var(--btn-border);background:#0c1322;color:var(--muted);
+      border-radius:999px;padding:4px 10px;font-size:12px;margin:4px 6px 0 0;
     }
-    .grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-    }
-    @media (max-width:800px){
-      .grid{grid-template-columns:1fr}
-    }
-    .footer{
-      margin:26px 0 40px;color:var(--muted);font-size:13px;text-align:center
-    }
-    .kpi{
-      display:flex;gap:10px;flex-wrap:wrap;margin-top:10px
-    }
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    @media (max-width:800px){.grid{grid-template-columns:1fr}}
+    .footer{margin:26px 0 40px;color:var(--muted);font-size:13px;text-align:center}
+    .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
     .kpi span{color:var(--muted);font-size:12px}
-    .ok{color:var(--green)}
-    .warn{color:var(--yellow)}
-    .err{color:var(--red)}
-    .linklist{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
     .highlight{color:var(--accent)}
+    img{max-width:100%;border:1px solid var(--border);border-radius:8px}
+    .linklist{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;justify-content:center}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="hero">
-      <h1>DeveloperStartSpringboot (DSS) — APT repository</h1>
-      <p>Install CLI via APT on Ubuntu/Debian “terminal-like”.</p>
-      <div class="kpi">
-        <span>Channel: <b>stable</b></span>
-        <span>Component: <b>main</b></span>
-        <span>architecture: <b>amd64</b></span>
-      </div>
+      <h1>Developer Start Spring Boot (DSS) — CLI</h1>
+      <p>Skip the tedious boilerplate. Generate a clean Spring Boot API skeleton in seconds.</p>
       <div class="linklist">
         <a href="https://github.com/EriqueRocha/developerStartSpringboot" target="_blank" rel="noopener">GitHub</a>
-        <a href="./public.key">Public key</a>
-        <a href="./dists/stable/main/binary-amd64/Packages">Packages</a>
+        <a href="./public.key">Public GPG key</a>
+        <a href="./dists/stable/main/binary-amd64/Packages">APT Packages index</a>
         <a href="./dists/stable/Release">Release</a>
         <a href="./dists/stable/InRelease">InRelease</a>
       </div>
@@ -141,12 +97,18 @@
           <div class="dot dot--yellow"></div>
           <div class="dot dot--green"></div>
         </div>
-        <div class="term__title">terminal — quick installation</div>
+        <div class="term__title">terminal — overview</div>
       </div>
       <div class="term__body">
-        <div class="badge">One‑liner</div>
-        <pre><button class="copy-btn" data-copy="one">copy</button><code id="one">
-curl -fsSL https://eriquerocha.github.io/developerStartSpringboot/install-deb.sh | sudo bash
+        <div class="badge">What is it?</div>
+        <p><strong>developerStartSpringboot</strong> is a terminal application designed for developers starting a Spring Boot API who want to bypass the tedious initial steps of creating layers, folders, and authentication.</p>
+        <p><img alt="dss terminal" src="./terminal.png"></p>
+        <div class="badge">How to use</div>
+        <pre><button class="copy-btn" data-copy="usage">copy</button><code id="usage">
+# After installing, run:
+dss init
+
+# Answer a few questions and get a ready-to-go project structure.
         </code></pre>
       </div>
     </div>
@@ -159,22 +121,27 @@ curl -fsSL https://eriquerocha.github.io/developerStartSpringboot/install-deb.sh
             <div class="dot dot--yellow"></div>
             <div class="dot dot--green"></div>
           </div>
-          <div class="term__title">terminal — manual installation (recommended for inspection)</div>
+          <div class="term__title">terminal — install (Ubuntu)</div>
         </div>
         <div class="term__body">
-          <div class="badge">step by step</div>
-          <pre><button class="copy-btn" data-copy="manual">copy</button><code id="manual">
-# 1) Install GPG key
-curl -fsSL https://eriquerocha.github.io/developerStartSpringboot/public.key | sudo gpg --dearmor -o /usr/share/keyrings/developerstartspringboot-archive-keyring.gpg
-
-# 2) Add repository (amd64)
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/developerstartspringboot-archive-keyring.gpg] https://eriquerocha.github.io/developerStartSpringboot stable main" | sudo tee /etc/apt/sources.list.d/developerstartspringboot.list
-
-# 3) Update and install
-sudo apt update
-sudo apt install developerstartspringboot
+          <div class="badge">Option A — one‑liner</div>
+          <pre><button class="copy-btn" data-copy="ubuntuA">copy</button><code id="ubuntuA">
+curl -fsSL https://eriquerocha.github.io/developerStartSpringboot/install-deb.sh | sudo bash
           </code></pre>
-          <p class="warn">Note: Your system may alert you if you change the Origin/Label/Codename on the first update — this is expected.</p>
+
+          <div class="badge">Option B — manual .deb</div>
+          <pre><button class="copy-btn" data-copy="ubuntuB">copy</button><code id="ubuntuB">
+# 1) Download the .deb package
+wget https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Ubuntu-linux/developerstartspringboot_0.1.0-1_amd64.deb
+# Or using curl:
+curl -L -O https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Ubuntu-linux/developerstartspringboot_0.1.0-1_amd64.deb
+
+# 2) Install (from the download directory)
+sudo dpkg -i developerstartspringboot_0.1.0-1_amd64.deb
+
+# 3) Start using
+dss init
+          </code></pre>
         </div>
       </div>
 
@@ -185,48 +152,33 @@ sudo apt install developerstartspringboot
             <div class="dot dot--yellow"></div>
             <div class="dot dot--green"></div>
           </div>
-          <div class="term__title">terminal — basic usage</div>
+          <div class="term__title">terminal — install (Fedora)</div>
         </div>
         <div class="term__body">
-          <div class="badge">DSS CLI</div>
-          <pre><button class="copy-btn" data-copy="usage">copy</button><code id="usage">
-# Check version
-dss --version
+          <div class="badge">Direct URL install</div>
+          <pre><button class="copy-btn" data-copy="fedoraA">copy</button><code id="fedoraA">
+sudo dnf install https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm
+          </code></pre>
 
-# Start a new project
+          <div class="badge">Or — download and install</div>
+          <pre><button class="copy-btn" data-copy="fedoraB">copy</button><code id="fedoraB">
+# 1) Download the .rpm package
+wget https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm
+# Or using curl:
+curl -L -O https://github.com/EriqueRocha/developerStartSpringboot/releases/download/Fedora-linux/developerStartSpringboot-0.1.0-1.x86_64.rpm
+
+# 2) Install (from the download directory)
+sudo dnf install ./developerStartSpringboot-0.1.0-1.x86_64.rpm
+
+# 3) Start using
 dss init
           </code></pre>
-          <p>More details on <a href="https://github.com/EriqueRocha/developerStartSpringboot" target="_blank" rel="noopener">project repository</a>.</p>
         </div>
-      </div>
-    </div>
-
-    <div class="term">
-      <div class="term__top">
-        <div class="dots">
-          <div class="dot dot--red"></div>
-          <div class="dot dot--yellow"></div>
-          <div class="dot dot--green"></div>
-        </div>
-        <div class="term__title">terminal — troubleshooting</div>
-      </div>
-      <div class="term__body">
-        <div class="badge">Quick Tips</div>
-        <pre><button class="copy-btn" data-copy="trouble">copiar</button><code id="trouble">
-# Update indexes
-sudo apt update
-
-# If apt warns about a changed source/label (first time)
-sudo apt update
-
-# If there is a conflict with third-party repositories (e.g., VSCode)
-# Update the vendor key or temporarily comment out the problematic entry in /etc/apt/sources.list.d/
-        </code></pre>
       </div>
     </div>
 
     <div class="footer">
-      <p>© <span class="highlight">Developer Start Spring Boot</span>. Hosted on GitHub Pages.</p>
+      <p>© <span class="highlight">DeveloperStartSpringboot</span>. Hosted on GitHub Pages.</p>
     </div>
   </div>
 
@@ -241,8 +193,8 @@ sudo apt update
       btn.addEventListener('click', ()=>{
         const which = btn.getAttribute('data-copy');
         copyFrom(which);
-        btn.textContent = 'copiado!';
-        setTimeout(()=>btn.textContent='copiar', 1300);
+        btn.textContent = 'copied!';
+        setTimeout(()=>btn.textContent='copy', 1300);
       });
     });
   </script>
