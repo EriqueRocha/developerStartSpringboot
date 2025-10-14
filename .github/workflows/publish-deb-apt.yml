@@ -93,13 +93,27 @@ jobs:
           mkdir -p repo/dists/stable/main/binary-amd64
           
           cd repo
+          
           apt-ftparchive packages pool > dists/stable/main/binary-amd64/Packages
           gzip -kf dists/stable/main/binary-amd64/Packages
-          apt-ftparchive release dists/stable > dists/stable/Release
-
+          
+          cat > apt-ftparchive.conf << 'EOF'
+          APT::FTPArchive::Release {
+            Origin "DeveloperStartSpringboot";
+            Label "DeveloperStartSpringboot";
+            Suite "stable";
+            Codename "stable";
+            Architectures "amd64";
+            Components "main";
+            Description "DeveloperStartSpringboot APT repository";
+          }
+          EOF
+          
+          apt-ftparchive -c apt-ftparchive.conf release dists/stable > dists/stable/Release
+          
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
             -abs -o dists/stable/Release.gpg dists/stable/Release
-
+          
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
             --clearsign -o dists/stable/InRelease dists/stable/Release
           
