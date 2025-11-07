@@ -10,10 +10,11 @@
  * See the LICENSE file for more details.
  */
 
-use std::io::{self, Write};
-use std::fs;
 use clap::{Parser, Subcommand};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::fs::create_dir_all;
+use std::io::{self, Write};
 
 
 const BANNER: &str = concat!("\x1b[32m", r#"
@@ -39,7 +40,7 @@ const BANNER: &str = concat!("\x1b[32m", r#"
 
 #[derive(Parser)]
 #[command(name = "dss")]
-#[command(about = "Spring Boot project generator", long_about = None)]
+#[command(about = "Spring Boot project generator")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -47,11 +48,10 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Initialize a new Spring Boot project
     Init,
-    /// Show version information
     Version,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 struct LogicalLayer {
     name: String,
@@ -69,114 +69,167 @@ struct ProjectSchema {
     physical_layers: Vec<PhysicalLayer>,
 }
 
-fn init_project() -> io::Result<()> {
-    println!("{}", BANNER);
-
-    let project_name = prompt_required("Project name (e.g.: MyAPI)");
-
-    let num_physical = prompt_number("How many physical layers?");
-    let mut physical_layers = Vec::new();
-
-    for i in 0..num_physical {
-        println!("\n→ Physical layer #{}:", i + 1);
-        let physical_name = prompt_required("  Name of physical layer");
-
-        let num_logical = prompt_number("  How many logical layers?");
-        let mut logical_layers = Vec::new();
-
-        for j in 0..num_logical {
-            let logical_name = prompt_required(&format!("    Name of logical layer #{}", j + 1));
-            logical_layers.push(LogicalLayer { name: logical_name });
+fn main() {
+    match Cli::parse().command {
+        Commands::Init => {
+            if let Err(e) = init_project() {
+                eprintln!("Error: {e}");
+                std::process::exit(1);
+            }
         }
-
-        physical_layers.push(PhysicalLayer {
-            name: physical_name,
-            logical_layers,
-        });
+        Commands::Version => println!("dss version 0.3.0"),
     }
-
-    let project_schema = ProjectSchema {
-        project_name: project_name.clone(),
-        physical_layers,
-    };
-
-    let json = serde_json::to_string_pretty(&project_schema).unwrap();
-
-    let file_name = format!("{}_schema.json", project_name);
-    fs::write(&file_name, &json)?;
-
-    println!("\n✅ Generated JSON schema:\n{}", json);
-    println!("\n💾 Saved to file: '{}'", file_name);
-
-    Ok(())
 }
 
-fn prompt_required(label: &str) -> String {
+/* ---------- helpers de formatação ---------- */
+
+fn to_pascal_case(s: &str) -> String {
+    s.split(|c: char| c == ' ' || c == '-' || c == '_')
+        .filter(|seg| !seg.is_empty())
+        .map(|seg| {
+            let mut ch = seg.chars();
+            match ch.next() {
+                Some(f) => f.to_uppercase().collect::<String>() + &ch.as_str().to_lowercase(),
+                None => String::new(),
+            }
+        })
+        .collect()
+}
+
+fn to_camel_case(s: &str) -> String {
+    let p = to_pascal_case(s);
+    let mut ch = p.chars();
+    match ch.next() {
+        Some(f) => f.to_lowercase().collect::<String>() + ch.as_str(),
+        None => String::new(),
+    }
+}
+
+fn domain_to_path(domain: &str) -> String {
+    domain
+        .trim()
+        .trim_start_matches("www.")
+        .split('.')
+        .filter(|seg| !seg.is_empty())
+        .rev()
+        .map(|seg| seg.to_lowercase())
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+/* ---------- prompts ---------- */
+
+fn prompt_line(label: &str, default: Option<&str>) -> String {
     loop {
-        let input = prompt(label, None);
-        if !input.trim().is_empty() {
-            return input;
+        print!(
+            "{}{}: ",
+            label,
+            default.map(|d| format!(" [{d}]")).unwrap_or_default()
+        );
+        io::stdout().flush().unwrap();
+
+        let mut buf = String::new();
+        io::stdin().read_line(&mut buf).unwrap();
+        let input = buf.trim();
+
+        if !input.is_empty() {
+            return input.to_string();
+        }
+        if let Some(def) = default {
+            return def.to_string();
         }
         println!("This field is required. Please fill it in.");
     }
 }
 
-fn prompt(label: &str, default: Option<&str>) -> String {
-    let mut input = String::new();
-    print!("{}{}: ", label, default.map(|d| format!(" [{}]", d)).unwrap_or_default());
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut input).unwrap();
-    let s = input.trim();
-    if s.is_empty() {
-        default.unwrap_or("DeveloperStartSpringboot").to_string()
-    } else {
-        to_pascal_case(s)
-    }
-}
-
 fn prompt_number(label: &str) -> usize {
     loop {
-        print!("{}: ", label);
+        print!("{label}: ");
         io::stdout().flush().unwrap();
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).unwrap();
-        if let Ok(num) = input.trim().parse::<usize>() {
-            return num;
+        let mut buf = String::new();
+        io::stdin().read_line(&mut buf).unwrap();
+        if let Ok(n) = buf.trim().parse::<usize>() {
+            return n;
         }
         println!("Please enter a valid number.");
     }
 }
 
-fn to_pascal_case(input: &str) -> String {
-    input
-        .split(|c: char| c == ' ' || c == '-' || c == '_')
-        .filter(|s| !s.is_empty())
-        .map(|word| {
-            let mut chars = word.chars();
-            match chars.next() {
-                Some(first) => {
-                    let first = first.to_uppercase().collect::<String>();
-                    let rest = chars.collect::<String>().to_lowercase();
-                    format!("{}{}", first, rest)
-                }
-                None => String::new(),
-            }
-        })
-        .collect::<String>()
+/* ---------- geração principal ---------- */
+
+fn init_project() -> io::Result<()> {
+    println!("{BANNER}");
+
+    //coleta
+    let project_name_raw = prompt_line("Project name (e.g.: MyAPI)", None);
+    let domain_raw = prompt_line("Domain (e.g.: example.com)", None);
+
+    let project_name = to_pascal_case(&project_name_raw);
+    let domain_path = domain_to_path(&domain_raw);
+
+    let num_physical = prompt_number("How many physical layers?");
+    let mut physical_layers = Vec::with_capacity(num_physical);
+
+    for i in 0..num_physical {
+        println!("\n→ Physical layer #{}:", i + 1);
+        let phys_name = prompt_line("  Name of physical layer", None);
+        let num_logical = prompt_number("  How many logical layers?");
+        let mut logical_layers = Vec::with_capacity(num_logical);
+
+        for j in 0..num_logical {
+            let log_name = prompt_line(&format!("    Name of logical layer #{}", j + 1), None);
+            logical_layers.push(LogicalLayer { name: log_name });
+        }
+        physical_layers.push(PhysicalLayer {
+            name: phys_name,
+            logical_layers,
+        });
+    }
+
+    //JSON
+    let schema = ProjectSchema {
+        project_name: project_name.clone(),
+        physical_layers,
+    };
+    let json = serde_json::to_string_pretty(&schema).unwrap();
+    let json_file = format!("{}_schema.json", project_name);
+    fs::write(&json_file, &json)?;
+    println!("\n-- Generated JSON schema:\n{json}");
+    println!("-- Saved to file: '{json_file}'");
+
+    //pastas
+    create_dirs(&schema, &domain_path)?;
+
+    Ok(())
 }
 
-fn main() {
-    let cli = Cli::parse();
+/* ---------- criação de diretórios ---------- */
 
-    match &cli.command {
-        Commands::Init => {
-            if let Err(e) = init_project() {
-                eprintln!("Error generating JSON: {}", e);
-                std::process::exit(1);
-            }
+fn create_dirs(schema: &ProjectSchema, domain_path: &str) -> io::Result<()> {
+    let root = &schema.project_name;
+    create_dir_all(root)?;
+    fs::write(format!("{root}/pom.xml"), "")?;//pom raiz
+
+    for phys in &schema.physical_layers {
+        let phys_camel = to_camel_case(&phys.name);
+        let phys_dir = format!("{root}/{phys_camel}");
+        create_dir_all(&phys_dir)?;
+
+        create_dir_all(format!("{phys_dir}/src/test"))?;
+        create_dir_all(format!("{phys_dir}/src/main/resource"))?;
+
+        let base_code = format!("{phys_dir}/src/main/{domain_path}/{phys_camel}");
+        create_dir_all(&base_code)?;
+
+        //camadas lógicas
+        for log in &phys.logical_layers {
+            let log_camel = to_camel_case(&log.name);
+            create_dir_all(format!("{base_code}/{log_camel}"))?;
         }
-        Commands::Version => {
-            println!("dss version 0.1.0");
-        }
+
+        fs::write(format!("{phys_dir}/pom.xml"), "")?;
     }
+
+    println!("\n-- Directories created successfully!");
+    Ok(())
 }
