@@ -1,4 +1,6 @@
-
+ATTENTION: For scalability reasons, I am migrating to a different way of generating projects.
+Currently, it was done using Java file templates, but this ends up being less dynamic and difficult to change.
+You can look at the branches to track the progress.
 
 ## developerStartSpringboot
 This is a terminal application designed for developers starting a Spring 
