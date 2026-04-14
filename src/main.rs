@@ -11,7 +11,7 @@
  */
 
 use std::fs;
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
@@ -70,6 +70,14 @@ pub struct DeveloperInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LayersConfig {
     pub physical: Vec<PhysicalLayer>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entity_location: Option<EntityLocation>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EntityLocation {
+    pub layer: String,
+    pub logical: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -175,6 +183,89 @@ fn prompt_yes_no(label: &str, default: bool) -> bool {
 fn prompt_number(label: &str, default: usize) -> usize {
     let input = prompt(label, Some(&default.to_string()));
     input.parse().unwrap_or(default)
+}
+
+enum KeyEvent { Up, Down, Enter, Other }
+
+fn raw_mode(enable: bool) {
+    let args: &[&str] = if enable {
+        &["-icanon", "-echo"]
+    } else {
+        &["icanon", "echo"]
+    };
+    let _ = std::process::Command::new("stty").args(args).status();
+}
+
+fn read_key() -> KeyEvent {
+    let mut buf = [0u8; 1];
+    if io::stdin().read(&mut buf).unwrap_or(0) == 0 {
+        return KeyEvent::Other;
+    }
+    match buf[0] {
+        0x1b => {
+            let mut seq = [0u8; 2];
+            if io::stdin().read(&mut seq).unwrap_or(0) == 2 {
+                match seq { [b'[', b'A'] => KeyEvent::Up, [b'[', b'B'] => KeyEvent::Down, _ => KeyEvent::Other }
+            } else { KeyEvent::Other }
+        }
+        b'\r' | b'\n' => KeyEvent::Enter,
+        b'k' => KeyEvent::Up,
+        b'j' => KeyEvent::Down,
+        _ => KeyEvent::Other,
+    }
+}
+
+fn redraw_selector(items: &[String], selected: usize) {
+    print!("\x1b[{}A", items.len());
+    for (i, item) in items.iter().enumerate() {
+        print!("\x1b[2K\r");
+        if i == selected {
+            println!("  {GREEN}{BOLD}▶ {item}{RESET}");
+        } else {
+            println!("    {item}");
+        }
+    }
+    io::stdout().flush().unwrap();
+}
+
+fn select_interactive(title: &str, items: &[String]) -> usize {
+    println!("\n  {CYAN}{BOLD}{title}{RESET}");
+    println!("  {YELLOW}(↑/↓ or k/j to navigate, Enter to confirm){RESET}\n");
+
+    for (i, item) in items.iter().enumerate() {
+        if i == 0 {
+            println!("  {GREEN}{BOLD}▶ {item}{RESET}");
+        } else {
+            println!("    {item}");
+        }
+    }
+    io::stdout().flush().unwrap();
+
+    raw_mode(true);
+    let mut selected = 0usize;
+
+    loop {
+        match read_key() {
+            KeyEvent::Up => {
+                if selected > 0 {
+                    selected -= 1;
+                    redraw_selector(items, selected);
+                }
+            }
+            KeyEvent::Down => {
+                if selected < items.len() - 1 {
+                    selected += 1;
+                    redraw_selector(items, selected);
+                }
+            }
+            KeyEvent::Enter => break,
+            KeyEvent::Other => {}
+        }
+    }
+
+    raw_mode(false);
+    println!();
+    selected
 }
 
 fn print_section(title: &str) {
@@ -359,15 +450,35 @@ fn build_config_interactive() -> ProjectConfig {
     }
 
     print_section("Entities");
-    let num_entities = prompt_number("Number of example entities to create", 1);
 
-    let mut entities: Vec<EntityConfig> = Vec::new();
-    for i in 0..num_entities {
-        print_subsection(&format!("Entity {}", i + 1));
-        let entity_name = prompt(&format!("Entity {} name", i + 1), Some("User"));
-        let role = prompt("Role for this entity", Some("USER"));
-        entities.push(EntityConfig { name: entity_name, role });
-    }
+    let (entities, entity_location) = if prompt_yes_no("Create entities?", true) {
+        let mut options: Vec<String> = Vec::new();
+        let mut option_map: Vec<(String, String)> = Vec::new();
+        for layer in &physical_layers {
+            for logical in &layer.logical {
+                options.push(format!("{} {} {}", layer.name, CYAN.to_string() + "›" + RESET, logical));
+                option_map.push((layer.name.clone(), logical.clone()));
+            }
+        }
+
+        let idx = select_interactive("Where should entities be placed?", &options);
+        let (chosen_layer, chosen_logical) = option_map[idx].clone();
+        println!("  {GREEN}✓ Entities will be placed in: {chosen_layer} › {chosen_logical}{RESET}");
+
+        let num_entities = prompt_number("Number of entities to create", 1);
+        let mut entities: Vec<EntityConfig> = Vec::new();
+        for i in 0..num_entities {
+            print_subsection(&format!("Entity {}", i + 1));
+            let entity_name = prompt(&format!("Entity {} name", i + 1), Some("User"));
+            let role = prompt("Role for this entity", Some("USER"));
+            entities.push(EntityConfig { name: entity_name, role });
+        }
+
+        let location = EntityLocation { layer: chosen_layer, logical: chosen_logical };
+        (entities, Some(location))
+    } else {
+        (Vec::new(), None)
+    };
 
     print_section("Features");
     let spring_security = prompt_yes_no("Include Spring Security (JWT)?", false);
@@ -388,6 +499,7 @@ fn build_config_interactive() -> ProjectConfig {
         },
         layers: LayersConfig {
             physical: physical_layers,
+            entity_location,
         },
         entities,
         features: FeaturesConfig {
@@ -519,6 +631,15 @@ impl<'a> CodeGenerator<'a> {
 
         if layer.is_main {
             self.generate_application_class(layer)?;
+
+            if self.config.features.example_endpoints {
+                let has_controllers = layer.logical.iter().any(|l| l.to_lowercase().contains("controllers"));
+                if !has_controllers {
+                    let controllers_path = base_path.join("controllers");
+                    fs::create_dir_all(&controllers_path)?;
+                    self.generate_example_controller(layer, "controllers", &controllers_path)?;
+                }
+            }
         }
 
         Ok(())
@@ -661,18 +782,22 @@ impl<'a> CodeGenerator<'a> {
     fn generate_logical_content(&self, layer: &PhysicalLayer, logical: &str, path: &Path) -> io::Result<()> {
         let logical_lower = logical.to_lowercase();
 
-        if logical_lower.contains("entities") || logical_lower.contains("domain") && logical_lower.contains("entities") {
+        let is_entity_location = match &self.config.layers.entity_location {
+            Some(loc) => loc.layer == layer.name && loc.logical == logical,
+            None => logical_lower.contains("entities"),
+        };
+        if is_entity_location {
             for entity in &self.config.entities {
                 self.generate_entity(layer, logical, path, entity)?;
             }
         }
 
-        if logical_lower.contains("repositories") {
+        if logical_lower.contains("repositor") {
             for entity in &self.config.entities {
-                if logical_lower.contains("ports") || logical_lower.contains("port") {
-                    self.generate_repository_port(layer, logical, path, entity)?;
-                } else if logical_lower.contains("adapters") || logical_lower.contains("adapter") {
+                if logical_lower.contains("adapters") || logical_lower.contains("adapter") {
                     self.generate_repository_adapter(layer, logical, path, entity)?;
+                } else {
+                    self.generate_repository_port(layer, logical, path, entity)?;
                 }
             }
         }
@@ -714,6 +839,13 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn find_entity_package(&self) -> String {
+        if let Some(loc) = &self.config.layers.entity_location {
+            return format!("{}.{}.{}",
+                self.config.project.domain,
+                loc.layer,
+                loc.logical.replace("/", ".")
+            );
+        }
         for layer in &self.config.layers.physical {
             for logical in &layer.logical {
                 if logical.contains("entities") {
@@ -731,7 +863,18 @@ impl<'a> CodeGenerator<'a> {
     fn find_port_repositories_package(&self) -> String {
         for layer in &self.config.layers.physical {
             for logical in &layer.logical {
-                if logical.contains("ports") && logical.contains("repositories") {
+                if logical.contains("ports") && logical.to_lowercase().contains("repositor") {
+                    return format!("{}.{}.{}",
+                        self.config.project.domain,
+                        layer.name,
+                        logical.replace("/", ".")
+                    );
+                }
+            }
+        }
+        for layer in &self.config.layers.physical {
+            for logical in &layer.logical {
+                if logical.to_lowercase().contains("repositor") {
                     return format!("{}.{}.{}",
                         self.config.project.domain,
                         layer.name,
@@ -1617,6 +1760,10 @@ fn create_default_template() -> ProjectConfig {
                     is_main: true,
                 },
             ],
+            entity_location: Some(EntityLocation {
+                layer: "core".to_string(),
+                logical: "domain/entities".to_string(),
+            }),
         },
         entities: vec![
             EntityConfig {
@@ -1645,7 +1792,7 @@ fn init_interactive() -> io::Result<()> {
     }
 
     if prompt_yes_no("Save configuration to JSON file?", false) {
-        let mut json_path = prompt("JSON file path", Some(&format!("{}.json", config.project.name)));on
+        let mut json_path = prompt("JSON file path", Some(&format!("{}.json", config.project.name)));
         if !json_path.ends_with(".json") {
             json_path.push_str(".json");
         }
