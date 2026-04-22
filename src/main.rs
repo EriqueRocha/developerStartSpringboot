@@ -95,6 +95,8 @@ pub struct EntityConfig {
     pub name: String,
     #[serde(default = "default_role")]
     pub role: String,
+    #[serde(default)]
+    pub authenticatable: bool,
 }
 
 fn default_role() -> String {
@@ -451,7 +453,7 @@ fn build_config_interactive() -> ProjectConfig {
 
     print_section("Entities");
 
-    let (entities, entity_location) = if prompt_yes_no("Create entities?", true) {
+    let (mut entities, entity_location) = if prompt_yes_no("Create entities?", true) {
         let mut options: Vec<String> = Vec::new();
         let mut option_map: Vec<(String, String)> = Vec::new();
         for layer in &physical_layers {
@@ -471,7 +473,7 @@ fn build_config_interactive() -> ProjectConfig {
             print_subsection(&format!("Entity {}", i + 1));
             let entity_name = prompt(&format!("Entity {} name", i + 1), Some("User"));
             let role = prompt("Role for this entity", Some("USER"));
-            entities.push(EntityConfig { name: entity_name, role });
+            entities.push(EntityConfig { name: entity_name, role, authenticatable: false });
         }
 
         let location = EntityLocation { layer: chosen_layer, logical: chosen_logical };
@@ -482,6 +484,17 @@ fn build_config_interactive() -> ProjectConfig {
 
     print_section("Features");
     let spring_security = prompt_yes_no("Include Spring Security (JWT)?", false);
+
+    if spring_security && !entities.is_empty() {
+        print_subsection("Authentication Entities");
+        for entity in &mut entities {
+            entity.authenticatable = prompt_yes_no(
+                &format!("Should {} have authentication endpoints (login/register)?", entity.name),
+                false,
+            );
+        }
+    }
+
     let example_endpoints = prompt_yes_no("Include example endpoints for testing?", true);
     let swagger = prompt_yes_no("Include Swagger/OpenAPI documentation?", true);
     let flyway = prompt_yes_no("Include Flyway migrations?", false);
@@ -632,12 +645,35 @@ impl<'a> CodeGenerator<'a> {
         if layer.is_main {
             self.generate_application_class(layer)?;
 
+            if self.config.features.spring_security {
+                let has_config = layer.logical.iter().any(|l| l.to_lowercase() == "config");
+                if !has_config {
+                    let config_path = base_path.join("config");
+                    fs::create_dir_all(&config_path)?;
+                    self.generate_security_config(layer, &config_path)?;
+                }
+            }
+
             if self.config.features.example_endpoints {
                 let has_controllers = layer.logical.iter().any(|l| l.to_lowercase().contains("controllers"));
                 if !has_controllers {
                     let controllers_path = base_path.join("controllers");
                     fs::create_dir_all(&controllers_path)?;
                     self.generate_example_controller(layer, "controllers", &controllers_path)?;
+                }
+            }
+
+            if self.config.features.spring_security {
+                let has_authenticatable = self.config.entities.iter().any(|e| e.authenticatable);
+                let has_controllers = layer.logical.iter().any(|l| l.to_lowercase().contains("controllers"));
+                if has_authenticatable && !has_controllers {
+                    let auth_path = base_path.join("auth");
+                    fs::create_dir_all(&auth_path)?;
+                    for entity in self.config.entities.iter().filter(|e| e.authenticatable) {
+                        self.generate_dto(layer, "auth", &auth_path, entity)?;
+                        self.generate_auth_dto(layer, "auth", &auth_path, entity)?;
+                        self.generate_auth_controller(layer, "auth", &auth_path, entity)?;
+                    }
                 }
             }
         }
@@ -659,6 +695,33 @@ impl<'a> CodeGenerator<'a> {
         </dependency>"#,
                 self.config.project.domain, dep
             ));
+        }
+
+        if let Some(loc) = &self.config.layers.entity_location {
+            let entity_layer = &loc.layer;
+            let is_same_layer = entity_layer == &layer.name;
+            let already_declared = layer.dependencies.iter().any(|d| d == entity_layer);
+
+            if !is_same_layer && !already_declared {
+                let needs_entity_dep = layer.logical.iter().any(|logical| {
+                    let lower = logical.to_lowercase();
+                    lower.contains("repositor")
+                        || lower.contains("controller")
+                        || lower.contains("usecase")
+                        || lower.contains("dto")
+                });
+
+                if needs_entity_dep {
+                    deps.push_str(&format!(r#"
+        <dependency>
+            <groupId>{}</groupId>
+            <artifactId>{}</artifactId>
+            <version>1.0.0</version>
+        </dependency>"#,
+                        self.config.project.domain, entity_layer
+                    ));
+                }
+            }
         }
 
         if layer.is_main {
@@ -805,6 +868,9 @@ impl<'a> CodeGenerator<'a> {
         if logical_lower.contains("controllers") || logical_lower.contains("web") && logical_lower.contains("controllers") {
             for entity in &self.config.entities {
                 self.generate_controller(layer, logical, path, entity)?;
+                if entity.authenticatable && self.config.features.spring_security {
+                    self.generate_auth_controller(layer, logical, path, entity)?;
+                }
             }
             if self.config.features.example_endpoints {
                 self.generate_example_controller(layer, logical, path)?;
@@ -814,6 +880,9 @@ impl<'a> CodeGenerator<'a> {
         if logical_lower.contains("dto") {
             for entity in &self.config.entities {
                 self.generate_dto(layer, logical, path, entity)?;
+                if entity.authenticatable && self.config.features.spring_security {
+                    self.generate_auth_dto(layer, logical, path, entity)?;
+                }
             }
         }
 
@@ -1287,6 +1356,101 @@ public record Create{pascal}Response(
         write_file(&path.join(format!("Create{}Response.java", pascal)), &response_content)
     }
 
+    fn find_security_package(&self) -> String {
+        self.config.layers.physical.iter()
+            .find(|l| l.is_main)
+            .map(|l| format!("{}.{}.config.security", self.config.project.domain, l.name))
+            .unwrap_or_default()
+    }
+
+    fn generate_auth_controller(&self, layer: &PhysicalLayer, logical: &str, path: &Path, entity: &EntityConfig) -> io::Result<()> {
+        let pascal = to_pascal_case(&entity.name);
+        let camel = to_camel_case(&entity.name);
+        let package = self.get_package(layer, logical);
+        let role = &entity.role;
+        let security_package = self.find_security_package();
+
+        let dto_package = if logical.to_lowercase().contains("controllers") {
+            package.replace(".controllers", ".dto")
+        } else {
+            package.clone()
+        };
+
+        let dto_imports = if dto_package != package {
+            format!(
+                "import {dto}.Create{pascal}Request;\nimport {dto}.Create{pascal}Response;\nimport {dto}.Login{pascal}Request;\nimport {dto}.Login{pascal}Response;\n",
+                dto = dto_package,
+                pascal = pascal,
+            )
+        } else {
+            String::new()
+        };
+
+        let content = format!(r#"package {package};
+
+{dto_imports}import {security_package}.JwtService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/auth/{camel}")
+public class {pascal}AuthController {{
+
+    private final JwtService jwtService;
+
+    public {pascal}AuthController(JwtService jwtService) {{
+        this.jwtService = jwtService;
+    }}
+
+    @PostMapping("/register")
+    public ResponseEntity<Create{pascal}Response> register(@RequestBody Create{pascal}Request request) {{
+        // TODO: validate and persist entity using the appropriate use case
+        return ResponseEntity.status(201).body(new Create{pascal}Response(1L, request.email(), request.name()));
+    }}
+
+    @PostMapping("/login")
+    public ResponseEntity<Login{pascal}Response> login(@RequestBody Login{pascal}Request request) {{
+        // TODO: validate credentials against the repository before issuing token
+        String token = jwtService.generateToken(request.email(), "{role}");
+        return ResponseEntity.ok(new Login{pascal}Response(token, "{role}"));
+    }}
+}}
+"#,
+            package = package,
+            dto_imports = dto_imports,
+            security_package = security_package,
+            pascal = pascal,
+            camel = camel,
+            role = role,
+        );
+
+        write_file(&path.join(format!("{}AuthController.java", pascal)), &content)
+    }
+
+    fn generate_auth_dto(&self, layer: &PhysicalLayer, logical: &str, path: &Path, entity: &EntityConfig) -> io::Result<()> {
+        let pascal = to_pascal_case(&entity.name);
+        let package = self.get_package(layer, logical);
+
+        let login_request = format!(r#"package {package};
+
+public record Login{pascal}Request(String email, String password) {{}}
+"#,
+            package = package,
+            pascal = pascal,
+        );
+
+        let login_response = format!(r#"package {package};
+
+public record Login{pascal}Response(String token, String role) {{}}
+"#,
+            package = package,
+            pascal = pascal,
+        );
+
+        write_file(&path.join(format!("Login{}Request.java", pascal)), &login_request)?;
+        write_file(&path.join(format!("Login{}Response.java", pascal)), &login_response)
+    }
+
     fn generate_usecase(&self, layer: &PhysicalLayer, logical: &str, path: &Path, entity: &EntityConfig) -> io::Result<()> {
         let pascal = to_pascal_case(&entity.name);
         let camel = to_camel_case(&entity.name);
@@ -1472,6 +1636,66 @@ public class SecurityConfig {{
 
         write_file(&security_path.join("SecurityConfig.java"), &security_config)?;
 
+        let jwt_service = format!(r#"package {package};
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.security.Key;
+import java.util.Date;
+
+@Service
+public class JwtService {{
+
+    @Value("${{jwt.secret}}")
+    private String secretKey;
+
+    @Value("${{jwt.expiration}}")
+    private Long expiration;
+
+    private Key getSigningKey() {{
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }}
+
+    public String generateToken(String subject, String role) {{
+        return Jwts.builder()
+            .setSubject(subject)
+            .claim("role", role)
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + expiration))
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .compact();
+    }}
+
+    public String extractSubject(String token) {{
+        return Jwts.parserBuilder()
+            .setSigningKey(getSigningKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .getSubject();
+    }}
+
+    public boolean isTokenValid(String token) {{
+        try {{
+            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+            return true;
+        }} catch (Exception e) {{
+            return false;
+        }}
+    }}
+}}
+"#,
+            package = package,
+        );
+
+        write_file(&security_path.join("JwtService.java"), &jwt_service)?;
+
         let jwt_filter = format!(r#"package {package};
 
 import jakarta.servlet.FilterChain;
@@ -1490,6 +1714,12 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {{
 
+    private final JwtService jwtService;
+
+    public JwtAuthenticationFilter(JwtService jwtService) {{
+        this.jwtService = jwtService;
+    }}
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {{
@@ -1498,22 +1728,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {{
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {{
             String token = authHeader.substring(7);
-            // TODO: Validate JWT token and extract user details
-            // For now, this is a placeholder implementation
 
-            if (isValidToken(token)) {{
+            if (jwtService.isTokenValid(token)) {{
+                String subject = jwtService.extractSubject(token);
                 var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-                var auth = new UsernamePasswordAuthenticationToken("user", null, authorities);
+                var auth = new UsernamePasswordAuthenticationToken(subject, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }}
         }}
 
         filterChain.doFilter(request, response);
-    }}
-
-    private boolean isValidToken(String token) {{
-        // TODO: Implement actual JWT validation
-        return token != null && !token.isEmpty();
     }}
 }}
 "#,
@@ -1615,8 +1839,8 @@ spring.flyway.locations=classpath:db/migration
 
         if self.config.features.spring_security {
             content.push_str(r#"
-# JWT Configuration
-jwt.secret=your-secret-key-here-change-in-production
+# JWT Configuration — replace the secret with a secure random Base64-encoded key in production
+jwt.secret=bXktc3VwZXItc2VjcmV0LWtleS1mb3ItaHMyNTYtYWxnb3JpdGhtLWNoYW5nZS1pbi1wcm9kdWN0aW9u
 jwt.expiration=86400000
 "#);
         }
@@ -1769,6 +1993,7 @@ fn create_default_template() -> ProjectConfig {
             EntityConfig {
                 name: "User".to_string(),
                 role: "USER".to_string(),
+                authenticatable: false,
             },
         ],
         features: FeaturesConfig {
